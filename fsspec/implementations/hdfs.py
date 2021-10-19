@@ -279,3 +279,63 @@ class PyArrowHDFS(PyArrowHDFSWrapper):
 
     def __reduce_ex__(self, protocol):
         return PyArrowHDFS, self.pars
+
+
+class PyArrowViewFS(PyArrowHDFSWrapper):
+
+    protocol = "viewfs", "file"
+
+    def __init__(
+        self,
+        host="/",
+        port=0,
+        user=None,
+        kerb_ticket=None,
+        driver="libhdfs",
+        extra_conf=None,
+        **kwargs,
+    ):
+        """
+
+        Parameters
+        ----------
+        host: str
+            Hostname, IP or "/" to try to read from Hadoop config
+        port: int
+            Port to connect on, or default from Hadoop config if 0
+        user: str or None
+            If given, connect as this username
+        kerb_ticket: str or None
+            If given, use this ticket for authentication
+        driver: 'libhdfs' or 'libhdfs3'
+            Binary driver; libhdfs if the JNI library and default
+        extra_conf: None or dict
+            Passed on to HadoopFileSystem
+        """
+
+        client = HadoopFileSystem(
+            host=f"viewfs://{host}",
+            port=port,
+            user=user,
+            kerb_ticket=kerb_ticket,
+            driver=driver,
+            extra_conf=extra_conf,
+        )
+        super().__init__(client, **kwargs)
+
+        self.pars = (host, port, user, kerb_ticket, driver, extra_conf)
+
+    @staticmethod
+    def _get_kwargs_from_urls(path):
+        ops = infer_storage_options(path)
+        out = {}
+        if ops.get("host", None):
+            out["host"] = ops["host"]
+        if ops.get("username", None):
+            out["user"] = ops["username"]
+        if ops.get("port", None):
+            out["port"] = ops["port"]
+        return out
+
+    def __reduce_ex__(self, protocol):
+        return PyArrowViewFS, self.pars

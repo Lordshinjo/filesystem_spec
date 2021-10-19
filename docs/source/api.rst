@@ -101,6 +101,7 @@ Built-in Implementations
    fsspec.implementations.ftp.FTPFileSystem
    fsspec.implementations.hdfs.PyArrowHDFSWrapper
    fsspec.implementations.hdfs.PyArrowHDFS
+   fsspec.implementations.hdfs.PyArrowViewFS
    fsspec.implementations.arrow.ArrowFSWrapper
    fsspec.implementations.arrow.HadoopFileSystem
    fsspec.implementations.arrow.ViewFileSystem
@@ -129,6 +130,9 @@ Built-in Implementations
    :members: __init__
 
 .. autoclass:: fsspec.implementations.hdfs.PyArrowHDFS
+   :members: __init__
+
+.. autoclass:: fsspec.implementations.hdfs.PyArrowViewFS
    :members: __init__
 
 .. autoclass:: fsspec.implementations.arrow.ArrowFSWrapper
