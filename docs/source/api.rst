@@ -99,6 +99,7 @@ Built-in Implementations
 
 .. autosummary::
    fsspec.implementations.ftp.FTPFileSystem
+   fsspec.implementations.hdfs.PyArrowHDFSWrapper
    fsspec.implementations.hdfs.PyArrowHDFS
    fsspec.implementations.arrow.ArrowFSWrapper
    fsspec.implementations.arrow.HadoopFileSystem
@@ -122,6 +123,9 @@ Built-in Implementations
    fsspec.implementations.reference.ReferenceFileSystem
 
 .. autoclass:: fsspec.implementations.ftp.FTPFileSystem
+   :members: __init__
+
+.. autoclass:: fsspec.implementations.hdfs.PyArrowHDFSWrapper
    :members: __init__
 
 .. autoclass:: fsspec.implementations.hdfs.PyArrowHDFS

@@ -43,66 +43,23 @@ from fsspec.utils import infer_storage_options, mirror_from
         "upload",
     ],
 )
-class PyArrowHDFS(AbstractFileSystem):
+class PyArrowHDFSWrapper(AbstractFileSystem):
     """Adapted version of Arrow's HadoopFileSystem
 
     This is a very simple wrapper over the pyarrow.hdfs.HadoopFileSystem, which
     passes on all calls to the underlying class."""
 
-    protocol = "hdfs", "file"
-
-    def __init__(
-        self,
-        host="default",
-        port=0,
-        user=None,
-        kerb_ticket=None,
-        driver="libhdfs",
-        extra_conf=None,
-        **kwargs,
-    ):
+    def __init__(self, client, **kwargs):
         """
 
         Parameters
         ----------
-        host: str
-            Hostname, IP or "default" to try to read from Hadoop config
-        port: int
-            Port to connect on, or default from Hadoop config if 0
-        user: str or None
-            If given, connect as this username
-        kerb_ticket: str or None
-            If given, use this ticket for authentication
-        driver: 'libhdfs' or 'libhdfs3'
-            Binary driver; libhdfs if the JNI library and default
-        extra_conf: None or dict
-            Passed on to HadoopFileSystem
+        client : pyarrow.hdfs.HadoopFileSystem
         """
         super().__init__(**kwargs)
 
-        self.client = HadoopFileSystem(
-            host=host,
-            port=port,
-            user=user,
-            kerb_ticket=kerb_ticket,
-            driver=driver,
-            extra_conf=extra_conf,
-        )
+        self.client = client
         weakref.finalize(self, lambda: self.client.close())
-
-        self.pars = (host, port, user, kerb_ticket, driver, extra_conf)
-
-    @staticmethod
-    def _get_kwargs_from_urls(path):
-        ops = infer_storage_options(path)
-        out = {}
-        if ops.get("host", None):
-            out["host"] = ops["host"]
-        if ops.get("username", None):
-            out["user"] = ops["username"]
-        if ops.get("port", None):
-            out["port"] = ops["port"]
-        return out
 
     @classmethod
     def _strip_protocol(cls, path):
@@ -113,9 +70,6 @@ class PyArrowHDFS(AbstractFileSystem):
         if path.startswith("file:"):
             path = path[5:]
         return path
-
-    def __reduce_ex__(self, protocol):
-        return PyArrowHDFS, self.pars
 
     def close(self):
         self.client.close()
@@ -265,3 +219,63 @@ class HDFSFile(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+
+
+class PyArrowHDFS(PyArrowHDFSWrapper):
+
+    protocol = "hdfs", "file"
+
+    def __init__(
+        self,
+        host="default",
+        port=0,
+        user=None,
+        kerb_ticket=None,
+        driver="libhdfs",
+        extra_conf=None,
+        **kwargs,
+    ):
+        """
+
+        Parameters
+        ----------
+        host: str
+            Hostname, IP or "default" to try to read from Hadoop config
+        port: int
+            Port to connect on, or default from Hadoop config if 0
+        user: str or None
+            If given, connect as this username
+        kerb_ticket: str or None
+            If given, use this ticket for authentication
+        driver: 'libhdfs' or 'libhdfs3'
+            Binary driver; libhdfs if the JNI library and default
+        extra_conf: None or dict
+            Passed on to HadoopFileSystem
+        """
+
+        client = HadoopFileSystem(
+            host=host,
+            port=port,
+            user=user,
+            kerb_ticket=kerb_ticket,
+            driver=driver,
+            extra_conf=extra_conf,
+        )
+        super().__init__(client, **kwargs)
+
+        self.pars = (host, port, user, kerb_ticket, driver, extra_conf)
+
+    @staticmethod
+    def _get_kwargs_from_urls(path):
+        ops = infer_storage_options(path)
+        out = {}
+        if ops.get("host", None):
+            out["host"] = ops["host"]
+        if ops.get("username", None):
+            out["user"] = ops["username"]
+        if ops.get("port", None):
+            out["port"] = ops["port"]
+        return out
+
+    def __reduce_ex__(self, protocol):
+        return PyArrowHDFS, self.pars
