@@ -239,3 +239,57 @@ class HadoopFileSystem(ArrowFSWrapper):
         if ops.get("port", None):
             out["port"] = ops["port"]
         return out
+
+
+class ViewFileSystem(ArrowFSWrapper):
+    """A wrapper on top of the pyarrow.fs.HadoopFileSystem
+    to connect it's interface with fsspec"""
+
+    protocol = "viewfs"
+
+    def __init__(
+        self,
+        host="/",
+        port=0,
+        user=None,
+        kerb_ticket=None,
+        extra_conf=None,
+        **kwargs,
+    ):
+        """
+
+        Parameters
+        ----------
+        host: str
+            Hostname, IP or "/" to try to read from Hadoop config
+        port: int
+            Port to connect on, or default from Hadoop config if 0
+        user: str or None
+            If given, connect as this username
+        kerb_ticket: str or None
+            If given, use this ticket for authentication
+        extra_conf: None or dict
+            Passed on to HadoopFileSystem
+        """
+        from pyarrow.fs import HadoopFileSystem
+
+        fs = HadoopFileSystem(
+            host=f"viewfs://{host}",
+            port=port,
+            user=user,
+            kerb_ticket=kerb_ticket,
+            extra_conf=extra_conf,
+        )
+        super().__init__(fs=fs, **kwargs)
+
+    @staticmethod
+    def _get_kwargs_from_urls(path):
+        ops = infer_storage_options(path)
+        out = {}
+        if ops.get("host", None):
+            out["host"] = ops["host"]
+        if ops.get("username", None):
+            out["user"] = ops["username"]
+        if ops.get("port", None):
+            out["port"] = ops["port"]
+        return out

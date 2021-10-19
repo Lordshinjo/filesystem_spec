@@ -102,6 +102,7 @@ Built-in Implementations
    fsspec.implementations.hdfs.PyArrowHDFS
    fsspec.implementations.arrow.ArrowFSWrapper
    fsspec.implementations.arrow.HadoopFileSystem
+   fsspec.implementations.arrow.ViewFileSystem
    fsspec.implementations.dask.DaskWorkerFileSystem
    fsspec.implementations.http.HTTPFileSystem
    fsspec.implementations.local.LocalFileSystem
@@ -129,7 +130,10 @@ Built-in Implementations
 .. autoclass:: fsspec.implementations.arrow.ArrowFSWrapper
    :members: __init__
 
-.. autoclass:: fsspec.implementations.hdfs.HadoopFileSystem
+.. autoclass:: fsspec.implementations.arrow.HadoopFileSystem
+   :members: __init__
+
+.. autoclass:: fsspec.implementations.arrow.ViewFileSystem
    :members: __init__
 
 .. autoclass:: fsspec.implementations.dask.DaskWorkerFileSystem
